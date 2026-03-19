@@ -28,4 +28,11 @@ class ProductProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+  void toggleFavorite(Product product) {
+    final index = _products.indexWhere((p) => p.id == product.id);
+    if (index != -1) {
+      _products[index].favorite = !_products[index].favorite;
+      notifyListeners();
+    }
+  }
 }

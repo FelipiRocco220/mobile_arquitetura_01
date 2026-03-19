@@ -49,7 +49,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
               return ListTile(
                 leading: Image.network(product.image, width: 50, height: 50, fit: BoxFit.cover),
                 title: Text(product.title),
-                subtitle: Text('\$${product.price}'),
+                subtitle: Text('R\$ ${product.price.toStringAsFixed(2)}'),
+                trailing: IconButton(
+                  icon: Icon(
+                    product.favorite ? Icons.star : Icons.star_border,
+                    color: product.favorite ? Colors.amber : null,
+                  ),
+                  onPressed: () {
+                    Provider.of<ProductProvider>(context, listen: false).toggleFavorite(product);
+                  },
+                ),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/detalhes',
+                    arguments: product,
+                  );
+                },
               );
             },
           );

@@ -28,6 +28,7 @@ class ProductModel {
       title: title,
       price: price,
       image: image,
+      favorite: false,
     );
   }
 }
