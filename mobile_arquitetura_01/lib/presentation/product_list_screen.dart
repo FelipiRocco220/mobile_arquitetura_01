@@ -28,9 +28,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (provider.error != null) {
-            return Center(child: Text('Erro: ${provider.error}'));
-          }
+            if (provider.error != null) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Erro ao carregar produtos:'),
+                    Text(provider.error!, style: const TextStyle(color: Colors.red)),
+                    const SizedBox(height: 16),
+                    const Text('Exibindo dados em cache, se disponíveis.'),
+                  ],
+                ),
+              );
+            }
 
           return ListView.builder(
             itemCount: provider.products.length,
@@ -39,7 +49,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
               return ListTile(
                 leading: Image.network(product.image, width: 50, height: 50, fit: BoxFit.cover),
                 title: Text(product.title),
-                subtitle: Text('\$${product.price}'),
+                subtitle: Text('R\$ ${product.price.toStringAsFixed(2)}'),
+                trailing: IconButton(
+                  icon: Icon(
+                    product.favorite ? Icons.star : Icons.star_border,
+                    color: product.favorite ? Colors.amber : null,
+                  ),
+                  onPressed: () {
+                    Provider.of<ProductProvider>(context, listen: false).toggleFavorite(product);
+                  },
+                ),
               );
             },
           );
