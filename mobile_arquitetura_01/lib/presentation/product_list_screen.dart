@@ -59,6 +59,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     Provider.of<ProductProvider>(context, listen: false).toggleFavorite(product);
                   },
                 ),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/detalhes',
+                    arguments: product,
+                  );
+                },
               );
             },
           );

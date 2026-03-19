@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'presentation/product_list_screen.dart';
+import 'presentation/home_screen.dart';
+import 'presentation/product_detail_screen.dart';
 import 'presentation/product_provider.dart';
 
 void main() {
@@ -19,7 +21,15 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const ProductListScreen(),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const HomeScreen(),
+          '/produtos': (context) => const ProductListScreen(),
+          '/detalhes': (context) {
+            final product = ModalRoute.of(context)!.settings.arguments as Product;
+            return ProductDetailScreen(product: product);
+          },
+        },
       ),
     );
   }
