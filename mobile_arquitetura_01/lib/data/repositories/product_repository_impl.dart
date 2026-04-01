@@ -1,33 +1,93 @@
-import '../../domain/entities/product.dart';
+import '../../domain/models/product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_remote_datasource.dart';
+import '../models/product_model.dart';
 
-/// O mecanismo de cache foi implementado nesta camada (Repository),
-/// pois é responsabilidade do repositório decidir de onde vêm os dados.
-/// Assim, a arquitetura em camadas é respeitada e a UI/ViewModel não
-/// precisa conhecer detalhes de cache ou fontes de dados.
+/// Implementação do repository que coordena a busca de dados
+/// Decide se busca da API ou do cache
+/// Converte dados brutos para entidades de domínio
 class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource remoteDataSource;
-  List<Product>? _cache;
+  List<ProductModel>? _cache;
 
   ProductRepositoryImpl(this.remoteDataSource);
 
   @override
   Future<List<Product>> getProducts() async {
-    // Se houver cache, retorna imediatamente
+    // Retorna do cache se disponível
     if (_cache != null && _cache!.isNotEmpty) {
-      return _cache!;
+      return _cache!.map((model) => model.toEntity()).toList();
     }
+
     try {
-      final models = await remoteDataSource.getProducts();
-      final products = models.map((model) => model.toEntity()).toList();
-      _cache = products;
-      return products;
+      final jsonList = await remoteDataSource.getProducts();
+      final models = jsonList
+          .map((json) => ProductModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+      _cache = models;
+      return models.map((model) => model.toEntity()).toList();
     } catch (e) {
-      // Se falhar, tenta retornar do cache
+      // Tenta usar cache em caso de erro
       if (_cache != null && _cache!.isNotEmpty) {
-        return _cache!;
+        return _cache!.map((model) => model.toEntity()).toList();
       }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Product> getProductById(String id) async {
+    try {
+      final data = await remoteDataSource.getProductById(id);
+      final model = ProductModel.fromJson(data as Map<String, dynamic>);
+      return model.toEntity();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Product> addProduct(Product product) async {
+    try {
+      final data = await remoteDataSource.addProduct({
+        'title': product.title,
+        'price': product.price,
+        'description': product.description,
+        'image': product.image,
+        'category': product.category,
+      });
+      final model = ProductModel.fromJson(data as Map<String, dynamic>);
+      return model.toEntity();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Product> updateProduct(Product product) async {
+    try {
+      final data = await remoteDataSource.updateProduct(
+        product.id ?? '',
+        {
+          'title': product.title,
+          'price': product.price,
+          'description': product.description,
+          'image': product.image,
+          'category': product.category,
+        },
+      );
+      final model = ProductModel.fromJson(data as Map<String, dynamic>);
+      return model.toEntity();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteProduct(String id) async {
+    try {
+      await remoteDataSource.deleteProduct(id);
+    } catch (e) {
       rethrow;
     }
   }
